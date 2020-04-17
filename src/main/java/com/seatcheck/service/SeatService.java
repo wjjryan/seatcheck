@@ -13,7 +13,7 @@ import java.util.List;
  */
 
 public interface SeatService {
-    Result buildAndSentInstruction(ArrayList<List<String>> list);
+    Result buildAndSentInstruction(ArrayList<List<String>> list,String orederNum);
     Result checkSeat(String orderNum,String scaner,String scanned);
     Result getMyinstruction(String orderNum,String studentNum);
     Result getSeatingChart(String orderNum);

@@ -29,7 +29,6 @@ public class SeatServiceImpl implements SeatService {
     private static int maxRow = 0;
     private static int maxColumn = 0;
     private static final String ZERO = "0";
-    private static final String OrderNum = "888";
     private static final int TIME = 40;
 
     @Autowired
@@ -45,11 +44,11 @@ public class SeatServiceImpl implements SeatService {
      * 根据座位表生成指令
      */
     @Override
-    public Result buildAndSentInstruction(ArrayList<List<String>> list) {
+    public Result buildAndSentInstruction(ArrayList<List<String>> list,String orederNum) {
         LinkedList<Node> nodes = ArrayTOString(list);
         LinkedList<LinkedList<Node>> forest = generateForest(nodes);
         Map<String,Object> map = generateOrders(forest);
-        System.out.println(sentToRedis(map));
+        System.out.println(sentToRedis(map,orederNum));
         return Result.success(map);
     }
 
@@ -58,9 +57,12 @@ public class SeatServiceImpl implements SeatService {
      */
     @Override
     public Result checkSeat(String orderNum,String scaner,String scanned){
+        System.out.println("scanner:"+scaner);
+        System.out.println("scanned:"+scanned);
         if (redisTemplate.opsForSet().isMember(orderNum,scaner) &&
                 redisTemplate.opsForSet().isMember(orderNum,scanned)){
             String fatherInfo = redisTemplate.opsForHash().get(scanned,"parentInfo").toString();
+            System.out.println("fatherinfo:"+fatherInfo);
             if(fatherInfo != null){
                if (fatherInfo.equals(scaner)){
                     redisTemplate.opsForHash().put(scaner,"snum",scaner + "x");
@@ -317,7 +319,7 @@ public class SeatServiceImpl implements SeatService {
     /**
      * 把信息存入redis中
      */
-    private int sentToRedis(Map<String,Object> map){
+    private int sentToRedis(Map<String,Object> map,String orederNum){
 
         List<Node> nodeList =(ArrayList)map.get("datas");
         List<String> list = new ArrayList<String>();
@@ -327,7 +329,7 @@ public class SeatServiceImpl implements SeatService {
             nodeInfo.put("row",String.valueOf(node.getRow()));
             nodeInfo.put("column",String.valueOf(node.getColumn()));
             if (node.getParentInfo() != null){
-                nodeInfo.put("parentInfo",String.valueOf(node.getRow()));}
+                nodeInfo.put("parentInfo",String.valueOf(node.getParentInfo()));}
             else {
                 nodeInfo.put("parentInfo","none");}
             if(node.getChildInfo() != null){
@@ -335,11 +337,11 @@ public class SeatServiceImpl implements SeatService {
             else {
                 nodeInfo.put("parentInfo","none");}
             nodeInfo.put("instruction",node.getInstruction());
-            setOperations.add(OrderNum,node.getSnum());
+            setOperations.add(orederNum,node.getSnum());
             hashOperations.putAll(node.getSnum(),(nodeInfo));
             redisTemplate.expire(node.getSnum(),TIME, TimeUnit.MINUTES);
         }
-        redisTemplate.expire(OrderNum,TIME,TimeUnit.MINUTES);
+        redisTemplate.expire(orederNum,TIME,TimeUnit.MINUTES);
         return 10086;
     }
 

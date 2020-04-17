@@ -27,9 +27,10 @@ public class SeatCheck {
     @ApiResponses({
             @ApiResponse(code = 200,message = "成功"),
             @ApiResponse(code = 500,message = "数据库发错误")})
-    @RequestMapping(value = "/seats", method = RequestMethod.POST)
-    public Result buildAndSent(@RequestBody ArrayList<List<String>> list){
-        return seatService.buildAndSentInstruction(list);
+    @RequestMapping(value = "/seats/{orederNum}", method = RequestMethod.POST)
+    public Result buildAndSent(@PathVariable String orederNum,
+            @RequestBody ArrayList<List<String>> list){
+        return seatService.buildAndSentInstruction(list,orederNum);
     }
 
     @ApiOperation(value = "座位校验接口",httpMethod = "PUT", produces = "application/json")
