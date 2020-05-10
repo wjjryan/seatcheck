@@ -17,4 +17,5 @@ public interface SeatService {
     Result checkSeat(String orderNum,String scaner,String scanned);
     Result getMyinstruction(String orderNum,String studentNum);
     Result getSeatingChart(String orderNum);
+    Result reBuildAndSentInstruction(ArrayList<List<String>> list,String orederNum);
 }

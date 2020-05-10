@@ -23,6 +23,9 @@ public class SeatCheck {
     @Resource
     SeatService seatService;
 
+    /**
+     * @description: 生成指令接口
+     */
     @ApiOperation(value = "生成并发送指令给老师",httpMethod = "POST", produces = "application/json")
     @ApiResponses({
             @ApiResponse(code = 200,message = "成功"),
@@ -33,17 +36,23 @@ public class SeatCheck {
         return seatService.buildAndSentInstruction(list,orederNum);
     }
 
+    /**
+     * @description:座位校验接口
+     */
     @ApiOperation(value = "座位校验接口",httpMethod = "PUT", produces = "application/json")
     @ApiResponses({
             @ApiResponse(code = 200,message = "成功"),
             @ApiResponse(code = 500,message = "数据库发错误")})
-    @RequestMapping(value = "/seats/{orederNum}", method = RequestMethod.PUT)
+    @RequestMapping(value = "/seat/{orederNum}", method = RequestMethod.PUT)
     public Result checkSeat(@PathVariable String orederNum,
                                @RequestParam(value = "scaner",required = true)String scaner,
                                @RequestParam(value = "scanned",required = true)String scanned){
         return seatService.checkSeat(orederNum,scaner,scanned);
     }
 
+    /**
+     * @description:获取指令
+     */
     @ApiOperation(value = "获取指令",httpMethod = "GET", produces = "application/json")
     @ApiResponses({
             @ApiResponse(code = 200,message = "成功"),
@@ -54,6 +63,9 @@ public class SeatCheck {
         return seatService.getMyinstruction(orederNum,studentNum);
     }
 
+    /**
+     * @description:获取座位表
+     */
     @ApiOperation(value = "获取座位表",httpMethod = "GET", produces = "application/json")
     @ApiResponses({
             @ApiResponse(code = 200,message = "成功"),
@@ -62,4 +74,18 @@ public class SeatCheck {
     public Result buildAndSent(@PathVariable String orederNum){
         return seatService.getSeatingChart(orederNum);
     }
+
+    /**
+     * @description:座位信息更新
+     */
+    @ApiOperation(value = "座位信息更新",httpMethod = "PUT", produces = "application/json")
+    @ApiResponses({
+            @ApiResponse(code = 200,message = "成功"),
+            @ApiResponse(code = 500,message = "数据库发错误")})
+    @RequestMapping(value = "/seats/{orederNum}", method = RequestMethod.PUT)
+    public Result reBuildAndSent(@PathVariable String orederNum,
+                               @RequestBody ArrayList<List<String>> list){
+        return seatService.reBuildAndSentInstruction(list,orederNum);
+    }
+
 }

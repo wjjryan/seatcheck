@@ -18,7 +18,7 @@ spring:
 
 #redis配置
 redis:
-host: 127.0.0.1       #Redis 地址
+host: 120.27.243.154       #Redis 地址
 port: 6379            #Redis 端口号
 database: 0           #Redis 索引（0~15，默认为0）
 timeout: 1000         #Redis 连接的超时时间

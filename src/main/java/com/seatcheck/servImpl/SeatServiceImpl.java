@@ -128,6 +128,18 @@ public class SeatServiceImpl implements SeatService {
         return Result.success(seats);
     }
 
+    /**
+     * 更新座位表信息
+     */
+    @Override
+    public Result reBuildAndSentInstruction(ArrayList<List<String>> list,String orederNum){
+        LinkedList<Node> nodes = ArrayTOString(list);
+        LinkedList<LinkedList<Node>> forest = generateForest(nodes);
+        Map<String,Object> map = generateOrders(forest);
+        System.out.println(updateToRedis(map,orederNum));
+        return Result.success(map);
+    }
+
 
 
     /**
@@ -339,6 +351,43 @@ public class SeatServiceImpl implements SeatService {
             nodeInfo.put("instruction",node.getInstruction());
             setOperations.add(orederNum,node.getSnum());
             hashOperations.putAll(node.getSnum(),(nodeInfo));
+            redisTemplate.expire(node.getSnum(),TIME, TimeUnit.MINUTES);
+        }
+        redisTemplate.expire(orederNum,TIME,TimeUnit.MINUTES);
+        return 10086;
+    }
+
+    /**
+     * 更新redis中的信息
+     */
+    private int updateToRedis(Map<String,Object> map,String orederNum){
+
+        List<Node> nodeList =(ArrayList)map.get("datas");
+        List<String> list = new ArrayList<String>();
+        for(Node node : nodeList){
+            Map<String,String> nodeInfo = new HashMap<>();
+            nodeInfo.put("snum",node.getSnum());
+            nodeInfo.put("row",String.valueOf(node.getRow()));
+            nodeInfo.put("column",String.valueOf(node.getColumn()));
+            if (node.getParentInfo() != null){
+                nodeInfo.put("parentInfo",String.valueOf(node.getParentInfo()));}
+            else {
+                nodeInfo.put("parentInfo","none");}
+            if(node.getChildInfo() != null){
+                nodeInfo.put("childInfo",node.getChildInfo().toString());}
+            else {
+                nodeInfo.put("parentInfo","none");}
+            nodeInfo.put("instruction",node.getInstruction());
+            //判断该同学是否已验证
+            if(redisTemplate.opsForSet().isMember(orederNum,node.getSnum())&&redisTemplate.opsForHash().get(node.getSnum(),"snum").toString().endsWith("x")){
+                    redisTemplate.opsForHash().put(node.getSnum()+"x","parentInfo",node.getParentInfo());
+                    redisTemplate.opsForHash().put(node.getSnum()+"x","childInfo",node.getChildInfo());
+                    redisTemplate.opsForHash().put(node.getSnum()+"x","instruction",node.getInstruction());
+            }
+            else {
+                setOperations.add(orederNum,node.getSnum());
+                hashOperations.putAll(node.getSnum(),(nodeInfo));
+            }
             redisTemplate.expire(node.getSnum(),TIME, TimeUnit.MINUTES);
         }
         redisTemplate.expire(orederNum,TIME,TimeUnit.MINUTES);
